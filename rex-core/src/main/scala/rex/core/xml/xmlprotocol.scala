@@ -34,7 +34,7 @@ trait XMLProtocol extends scalaxb.XMLStandardTypes {
   implicit lazy val Rexcorexml_DataFlowTypeFormat: scalaxb.XMLFormat[rex.core.xml.DataFlowType] = new DefaultRexcorexml_DataFlowTypeFormat {}
   implicit lazy val Rexcorexml_TransformationsTypeFormat: scalaxb.XMLFormat[rex.core.xml.TransformationsType] = new DefaultRexcorexml_TransformationsTypeFormat {}
   implicit lazy val Rexcorexml_HiveTableTypeFormat: scalaxb.XMLFormat[rex.core.xml.HiveTableType] = new DefaultRexcorexml_HiveTableTypeFormat {}
-  implicit lazy val Rexcorexml_CategoryFormat: scalaxb.XMLFormat[rex.core.xml.Category] = new DefaultRexcorexml_CategoryFormat {}
+  implicit lazy val Rexcorexml_TransCategoryFormat: scalaxb.XMLFormat[rex.core.xml.TransCategory] = new DefaultRexcorexml_TransCategoryFormat {}
   implicit lazy val Rexcorexml_ExpressionFormat: scalaxb.XMLFormat[rex.core.xml.Expression] = new DefaultRexcorexml_ExpressionFormat {}
   implicit lazy val Rexcorexml_TransformationTypeFormat: scalaxb.XMLFormat[rex.core.xml.TransformationType] = new DefaultRexcorexml_TransformationTypeFormat {}
   implicit lazy val Rexcorexml_ModeTypeFormat: scalaxb.XMLFormat[rex.core.xml.ModeType] = new DefaultRexcorexml_ModeTypeFormat {}
@@ -98,7 +98,7 @@ trait XMLProtocol extends scalaxb.XMLStandardTypes {
 
   def buildRexcorexml_ValueFromFormat = new DefaultRexcorexml_ValueFromFormat {}
 
-  def buildRexcorexml_CategoryFormat = new DefaultRexcorexml_CategoryFormat {}
+  def buildRexcorexml_TransCategoryFormat = new DefaultRexcorexml_TransCategoryFormat {}
 
   def buildRexcorexml_ModeTypeFormat = new DefaultRexcorexml_ModeTypeFormat {}
 
@@ -731,15 +731,15 @@ trait XMLProtocol extends scalaxb.XMLStandardTypes {
 
   }
 
-  trait DefaultRexcorexml_CategoryFormat extends scalaxb.XMLFormat[rex.core.xml.Category] {
+  trait DefaultRexcorexml_TransCategoryFormat extends scalaxb.XMLFormat[rex.core.xml.TransCategory] {
     val targetNamespace: Option[String] = None
 
-    def reads(seq: scala.xml.NodeSeq, stack: List[scalaxb.ElemName]): Either[String, rex.core.xml.Category] = seq match {
+    def reads(seq: scala.xml.NodeSeq, stack: List[scalaxb.ElemName]): Either[String, rex.core.xml.TransCategory] = seq match {
       case elem: scala.xml.Elem => Right(fromString(elem.text, elem.scope))
       case _ => Right(fromString(seq.text, scala.xml.TopScope))
     }
 
-    def fromString(value: String, scope: scala.xml.NamespaceBinding): rex.core.xml.Category = scalaxb.fromXML[String](scala.xml.Text(value)) match {
+    def fromString(value: String, scope: scala.xml.NamespaceBinding): rex.core.xml.TransCategory = scalaxb.fromXML[String](scala.xml.Text(value)) match {
       case x: String if x == scalaxb.fromXML[String](scala.xml.Text("SchemaTransformation")) => rex.core.xml.SchemaTransformation
       case x: String if x == scalaxb.fromXML[String](scala.xml.Text("ColumnTransformation")) => rex.core.xml.ColumnTransformation
       case x: String if x == scalaxb.fromXML[String](scala.xml.Text("GroupByTransformation")) => rex.core.xml.GroupByTransformation
@@ -753,7 +753,7 @@ trait XMLProtocol extends scalaxb.XMLStandardTypes {
 
     }
 
-    def writes(__obj: rex.core.xml.Category, __namespace: Option[String], __elementLabel: Option[String],
+    def writes(__obj: rex.core.xml.TransCategory, __namespace: Option[String], __elementLabel: Option[String],
                __scope: scala.xml.NamespaceBinding, __typeAttribute: Boolean): scala.xml.NodeSeq =
       scala.xml.Elem(scalaxb.Helper.getPrefix(__namespace, __scope).orNull,
         __elementLabel getOrElse {
@@ -826,8 +826,8 @@ trait XMLProtocol extends scalaxb.XMLStandardTypes {
             (node \ "@name").headOption map { x => scalaxb.DataRecord(x, node, scalaxb.fromXML[String](x, scalaxb.ElemName(node) :: stack)) } map {
               "@name" -> _
             },
-            (node \ "@category").headOption map { x => scalaxb.DataRecord(x, node, scalaxb.fromXML[rex.core.xml.Category](x, scalaxb.ElemName(node) :: stack)) } map {
-              "@category" -> _
+            (node \ "@transCategory").headOption map { x => scalaxb.DataRecord(x, node, scalaxb.fromXML[rex.core.xml.TransCategory](x, scalaxb.ElemName(node) :: stack)) } map {
+              "@transCategory" -> _
             },
             (node \ "@applyondataref").headOption map { x => scalaxb.DataRecord(x, node, scalaxb.fromXML[String](x, scalaxb.ElemName(node) :: stack)) } map {
               "@applyondataref" -> _
@@ -838,7 +838,7 @@ trait XMLProtocol extends scalaxb.XMLStandardTypes {
       var attr: scala.xml.MetaData = scala.xml.Null
       __obj.attributes.toList map {
         case ("@name", _) => attr = scala.xml.Attribute(null, "name", __obj.name.toString, attr)
-        case ("@category", _) => attr = scala.xml.Attribute(null, "category", __obj.category.toString, attr)
+        case ("@transCategory", _) => attr = scala.xml.Attribute(null, "transCategory", __obj.transCategory.toString, attr)
         case ("@applyondataref", _) => attr = scala.xml.Attribute(null, "applyondataref", __obj.applyondataref.toString, attr)
         case (key, x) => attr = scala.xml.Attribute((x.namespace map {
           __scope.getPrefix(_)
@@ -2086,7 +2086,6 @@ trait XMLProtocol extends scalaxb.XMLStandardTypes {
           sys.error("missing element label.") },
         scala.xml.Null, __scope, true, scala.xml.Text(__obj.toString))
   }
-
   trait DefaultRexcorexml_PartitionTypeFormat extends scalaxb.ElemNameParser[rex.core.xml.PartitionType] {
     val targetNamespace: Option[String] = None
 
@@ -2100,9 +2099,8 @@ trait XMLProtocol extends scalaxb.XMLStandardTypes {
         },
           p2.headOption map {
             scalaxb.fromXML[rex.core.xml.ColumnListType](_, scalaxb.ElemName(node) :: stack)
-          })
-      })
-
+          }) })
+    
     def writesChildNodes(__obj: rex.core.xml.PartitionType, __scope: scala.xml.NamespaceBinding): Seq[scala.xml.Node] =
       Seq.concat(__obj.DatePartitionFormat map {
         scalaxb.toXML[String](_, None, Some("DatePartitionFormat"), __scope, false)

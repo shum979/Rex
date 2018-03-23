@@ -1,0 +1,12 @@
+<Transformations>
+    <Transformation name="exprTransform" applyondataref="ingestedData1" transCategory="ExpressionTransformation">
+        <Expression>
+            <ColumnExpression>
+                <Column name="sal" expr="if(${sal} &lt; 300) ${sal}+50 else ${sal} + 20 " isNew="true"/>
+                <Column name="Rating"
+                        expr="if((${sal} == ${age}*${age}) &amp;&amp; ${age} &lt;= 30 ) { &quot;GOOD EMPLOYEE&quot;} else {&quot;BAD EMPLOYEE&quot;}"
+                        isNew="true"/>
+            </ColumnExpression>
+        </Expression>
+    </Transformation>
+</Transformations>

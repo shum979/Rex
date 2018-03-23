@@ -1,0 +1,11 @@
+<Transformations>
+    <Transformation name="exprTransform" applyondataref="ingestedData1" transCategory="ExpressionTransformation">
+        <Expression>
+            <ColumnExpression>
+                <Column name="sal" expr="if(${sal} &lt; 300) ${sal}+500 else ${sal}+100" isNew="true"/>
+                <Column name="salMultiAge" expr="${sal}*${age}" typeValue="IntegerType" isNullable="true" isNew="true"/>
+                <Column name="age5" expr="if(${age} &gt; 20) ${sal} + 100 else ${sal} + 200" isNew="true"/>
+            </ColumnExpression>
+        </Expression>
+    </Transformation>
+</Transformations>

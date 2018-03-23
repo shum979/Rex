@@ -172,7 +172,7 @@
             </xs:element>
         </xs:sequence>
         <xs:attribute name="name" type="xs:string" use="required"/>
-        <xs:attribute name="category" use="required">
+        <xs:attribute name="transCategory" use="required">
             <xs:simpleType>
                 <xs:restriction base="xs:string">
                     <xs:enumeration value="SchemaTransformation"/>

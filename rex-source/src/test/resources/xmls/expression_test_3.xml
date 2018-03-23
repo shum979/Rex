@@ -1,0 +1,14 @@
+<Transformations>
+    <Transformation name="exprTransform" applyondataref="ingestedData1" transCategory="ExpressionTransformation">
+        <Expression>
+            <ColumnExpression>
+                <Column name="AGE_GROUP"
+                        expr="if(${age} &lt; 20) &quot;TEENAGER&quot; else if(${age} &gt;= 20 &amp;&amp; ${age} &lt; 50) &quot;ADULT&quot; else &quot;OLD&quot;"
+                        isNew="true"/>
+                <Column name="LOCATION"
+                        expr="if(List(&quot;noida&quot;,&quot;gurgaon&quot;, &quot;delhi&quot;).contains(${city})) ${city}.concat(&quot;-NCR&quot;) else ${city}.concat(&quot;-OTHERS&quot;)"
+                        isNew="true"/>
+            </ColumnExpression>
+        </Expression>
+    </Transformation>
+</Transformations>

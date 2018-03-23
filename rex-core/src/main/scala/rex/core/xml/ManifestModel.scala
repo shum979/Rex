@@ -73,6 +73,7 @@ case class AggregationsType(Aggregation: Seq[rex.core.xml.AggregationType] = Nil
 
 case class GroupByType(GroupByColumn: Seq[String] = Nil,
                        AggregateColumn: Seq[rex.core.xml.AggregationType] = Nil)
+      
 
 
 case class ColumnListType(Column: Seq[String] = Nil)
@@ -178,6 +179,7 @@ case class AddColumnType(value: String,
 case class ColumnTransformationType(AddNew: Option[rex.core.xml.AddColumnsType] = None,
                                     Delete: Option[rex.core.xml.DeleteColumnType] = None,
                                     Rename: Option[rex.core.xml.RenamesType] = None)
+      
 
 
 case class DataFlowType(Flow: Seq[rex.core.xml.FlowType] = Nil)
@@ -193,52 +195,52 @@ case class HiveTableType(attributes: Map[String, scalaxb.DataRecord[Any]] = Map(
 }
 
 
-trait Category
+trait TransCategory
 
-object Category {
-  def fromString(value: String, scope: scala.xml.NamespaceBinding)(implicit fmt: scalaxb.XMLFormat[rex.core.xml.Category]): Category = fmt.reads(scala.xml.Text(value), Nil) match {
-    case Right(x: Category) => x
+object TransCategory {
+  def fromString(value: String, scope: scala.xml.NamespaceBinding)(implicit fmt: scalaxb.XMLFormat[rex.core.xml.TransCategory]): TransCategory = fmt.reads(scala.xml.Text(value), Nil) match {
+    case Right(x: TransCategory) => x
     case x => throw new RuntimeException(s"fromString returned unexpected value $x for input $value")
   }
 }
 
-case object SchemaTransformation extends Category {
+case object SchemaTransformation extends TransCategory {
   override def toString = "SchemaTransformation"
 }
 
-case object ColumnTransformation extends Category {
+case object ColumnTransformation extends TransCategory {
   override def toString = "ColumnTransformation"
 }
 
-case object GroupByTransformation extends Category {
+case object GroupByTransformation extends TransCategory {
   override def toString = "GroupByTransformation"
 }
 
-case object SimpleFilterTransformation extends Category {
+case object SimpleFilterTransformation extends TransCategory {
   override def toString = "SimpleFilterTransformation"
 }
 
-case object CustomFilterTransformation extends Category {
+case object CustomFilterTransformation extends TransCategory {
   override def toString = "CustomFilterTransformation"
 }
 
-case object CustomTransformation extends Category {
+case object CustomTransformation extends TransCategory {
   override def toString = "CustomTransformation"
 }
 
-case object JoinTransformation extends Category {
+case object JoinTransformation extends TransCategory {
   override def toString = "JoinTransformation"
 }
 
-case object SQLTransformation extends Category {
+case object SQLTransformation extends TransCategory {
   override def toString = "SQLTransformation"
 }
 
-case object DeDuplicationTransformation extends Category {
+case object DeDuplicationTransformation extends TransCategory {
   override def toString = "DeDuplicationTransformation"
 }
 
-case object ExpressionTransformation extends Category {
+case object ExpressionTransformation extends TransCategory {
   override def toString = "ExpressionTransformation"
 }
 
@@ -246,6 +248,7 @@ case object ExpressionTransformation extends Category {
 case class Expression(RowExpression: Option[rex.core.xml.ExpressionRowType] = None,
                       ColumnExpression: Option[rex.core.xml.ExpressionColumnType] = None,
                       FilterExpression: Option[rex.core.xml.ExpressionFilterType] = None)
+      
 
 
 case class TransformationType(ColumnTransformations: Option[rex.core.xml.ColumnTransformationType] = None,
@@ -255,7 +258,7 @@ case class TransformationType(ColumnTransformations: Option[rex.core.xml.ColumnT
                               Expression: Option[rex.core.xml.Expression] = None,
                               attributes: Map[String, scalaxb.DataRecord[Any]] = Map()) {
   lazy val name = attributes("@name").as[String]
-  lazy val category = attributes("@category").as[Category]
+  lazy val transCategory = attributes("@transCategory").as[TransCategory]
   lazy val applyondataref = attributes("@applyondataref").as[String]
 }
 
@@ -300,7 +303,7 @@ trait DataSourceTypeOption
 
 case class DatabaseType(Query: String,
                         Connection: String) extends DataSourceTypeOption
-
+      
 
 trait Format
 
@@ -359,6 +362,7 @@ case class WithColumnType(value: String,
 
 case class PropertiesType(Property: Seq[rex.core.xml.PropertyType] = Nil,
                           PropertyFilePath: Option[rex.core.xml.PropertyFilePathType] = None)
+      
 
 
 case class PropertyFilePathType(value: String,
@@ -525,6 +529,7 @@ trait ExportTypeOption
 
 case class AdditionalFieldsType(source: rex.core.xml.ColumnListType,
                                 target: rex.core.xml.ColumnListType)
+      
 
 
 case class Column(attributes: Map[String, scalaxb.DataRecord[Any]] = Map()) {
@@ -561,6 +566,7 @@ case class Column2(attributes: Map[String, scalaxb.DataRecord[Any]] = Map()) {
 
 case class ExpressionRowType(Column: Seq[rex.core.xml.Column2] = Nil,
                              Expr: String)
+      
 
 
 case class ExpressionFilterType(Expr: String)
