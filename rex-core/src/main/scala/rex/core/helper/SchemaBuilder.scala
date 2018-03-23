@@ -13,7 +13,7 @@ import scala.util.parsing.json._
   */
 object SchemaBuilder {
 
-  /*method for implicitly converting SbxDataType to string*/
+  /*method for implicitly converting DataType to string*/
   implicit def dataTypeToString(dt: ColumnDataType): String = dt.toString
 
   /*this methods reads schema from file and stored in json format and convert into StructType*/

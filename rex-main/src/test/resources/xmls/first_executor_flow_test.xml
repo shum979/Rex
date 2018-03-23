@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DataFlows xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:noNamespaceSchemaLocation="../../../../../rex-core/src/main/xsd/ManifestModel.xsd">
+    <DataSources>
+        <DataSource type="file" name="file_source">
+            <File>
+                <DirectoryPath>$PROJECT_PATH\\src\\test\\resources</DirectoryPath>
+                <FileNameOrPattern>data/seller_data_5.txt</FileNameOrPattern>
+                <TopLinesToIgnore>0</TopLinesToIgnore>
+                <BottomLinesToIgnore>0</BottomLinesToIgnore>
+                <Delimiter>|</Delimiter>
+                <SchemaFilePath>$PROJECT_PATH/src/test/resources/data/seller_data_schema.json</SchemaFilePath>
+            </File>
+        </DataSource>
+    </DataSources>
+    <DataFlow>
+        <Flow id="IngestFeed" type="Ingest">
+            <Ingest applyondataref="file_source" name="ingestedData1"/>
+        </Flow>
+        <Flow id="transform" type="Transform">
+            <Transformations>
+                <Transformation name="deduplicatedData" applyondataref="ingestedData1"
+                                transCategory="DeDuplicationTransformation">
+                    <DeDuplication>
+                        <DeDupColumns>
+                            <Column>sellerID</Column>
+                            <Column>type</Column>
+                            <Column>tag</Column>
+                        </DeDupColumns>
+                    </DeDuplication>
+                </Transformation>
+                <Transformation name="expressedData" transCategory="ExpressionTransformation"
+                                applyondataref="deduplicatedData">
+                    <Expression>
+                        <ColumnExpression>
+                            <Column name="type"
+                                    expr="if(${type} == &quot;Institutional&quot;) &quot;INST&quot; else &quot;OTHER&quot;"
+                                    type="StringType"/>
+                        </ColumnExpression>
+                    </Expression>
+                </Transformation>
+            </Transformations>
+        </Flow>
+        <Flow id="storeTable" type="Export">
+            <Export name="cstStoredData" applyondataref="expressedData">
+                <File format="csv">
+                    <TargetStore>local</TargetStore>
+                    <FileLocation>$PROJECT_PATH\\target\\sampleOut</FileLocation>
+                    <Mode>Overwrite</Mode>
+                </File>
+            </Export>
+        </Flow>
+    </DataFlow>
+</DataFlows>

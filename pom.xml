@@ -13,6 +13,8 @@
         <module>rex-core</module>
         <module>rex-source</module>
         <module>rex-recon</module>
+        <module>rex-main</module>
+        <module>functional-test</module>
     </modules>
 
     <properties>

@@ -1,0 +1,34 @@
+{
+  "title": "Seller_data",
+  "comment": "this data represent sellers",
+  "fields": [
+    {
+      "name": "sellerID",
+      "type": "LongType"
+    },
+    {
+      "name": "type",
+      "type": "StringType"
+    },
+    {
+      "name": "tag",
+      "type": "stringType"
+    },
+    {
+      "name": "since",
+      "type": "StringType"
+    },
+    {
+      "name": "userRating",
+      "type": "floatType"
+    },
+    {
+      "name": "lastSold",
+      "type": "StringType"
+    },
+    {
+      "name": "goodsCategory",
+      "type": "intType"
+    }
+  ]
+}

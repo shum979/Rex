@@ -1,4 +1,4 @@
-package common
+package rex.main
 
 import org.apache.spark.sql.SparkSession
 
@@ -16,4 +16,3 @@ trait TestSparkContextProvider {
   spark.conf.set("spark.default.parallelism", "1")
 
 }
-

@@ -1,0 +1,6 @@
+sellerId|SellerType|SellerImpact|enrollmentDt|userRating|LastsoldTs|prodcutCategory
+9001|Institutional|High|25-Jul-2014|1.3|2017-03-29 16:02:25|124
+9002|inHouse|Low|02-Jul-2014|4.1|2017-02-15 15:59:50|162
+9003|Premium|Impactful|07-Apr-2013|0.8|2017-04-12 16:10:31|130
+9004|Premium|Impactful|07-Dec-2016|4.3|2017-02-17 15:52:29|142
+9005|ChannelPartner|VeryHigh|07-Feb-2017|4.0|2017-04-22 15:56:58|133

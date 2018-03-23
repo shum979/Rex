@@ -6,12 +6,12 @@ import rex.src.utils.AppConstants._
 
 
 /**
-  * This adapter converts a SbxDeDuplicationType case class to a DeduplicateCaseClass case class
+  * This adapter converts a DeDuplicationType case class to a DeduplicateCaseClass case class
   */
 object DeduplicationCaseClassAdapter {
 
   /**
-    * The apply method to convert SbxDeDuplicationType case class to DeduplicateCaseClass case class
+    * The apply method to convert DeDuplicationType case class to DeduplicateCaseClass case class
     *
     * @param deDuplicationType
     * @return

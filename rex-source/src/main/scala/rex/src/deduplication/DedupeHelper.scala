@@ -49,7 +49,7 @@ object DedupeHelper {
 }
 
 /**
-  * This is a wrapper case class over the SbxDeDuplicationType case class
+  * This is a wrapper case class over the DeDuplicationType case class
   *
   * @param groupingKeys
   * @param strategy

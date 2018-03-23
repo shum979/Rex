@@ -39,7 +39,7 @@ class ReconWithJoin(sbxReconConfig: ReconciliationType) extends Serializable wit
   val getMatchingKeyString = comparisionKeyColumns.map(x => x.replaceFirst("=", "|")).mkString(",")
   val getLeftMatchingKey: Seq[String] = comparisionKeyColumns.map(x => ReconUtil.findColumns(x)._1)
   val getRightMatchingKey: Seq[String] = comparisionKeyColumns.map(x => ReconUtil.findColumns(x)._2)
-  //Convert SbxDeduplicationType to Deduplication case class
+  //Convert DeduplicationType to Deduplication case class
   val leftDedupCaseClass = DeduplicationCaseClassAdapter(sbxReconConfig.DeDuplicationStrategy.filter(sbxDedupType => SOURCE_SIDE.eq(sbxDedupType.side.getOrElse("").toString)).head)
   val rightDedupCaseClass = DeduplicationCaseClassAdapter(sbxReconConfig.DeDuplicationStrategy.filter(sbxDedupType => TARGET_SIDE.eq(sbxDedupType.side.getOrElse("").toString)).head)
 

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DataFlows xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:noNamespaceSchemaLocation="../../../xsd/ManifestModel.xsd">
+    <DataSources>
+        <DataSource type="file" name="source_file">
+            <File>
+                <DirectoryPath>$TEST_DATA_PATH/$TEST_CASE/data</DirectoryPath>
+                <FileNameOrPattern>sampleTestFile.txt</FileNameOrPattern>
+
+                <Delimiter>,</Delimiter>
+                <Header>true</Header>
+                <Tags>filesystem=FI,valueDate=05022018</Tags>
+            </File>
+        </DataSource>
+        <DataSource type="file" name="target_file">
+            <File>
+                <DirectoryPath>$TEST_DATA_PATH/$TEST_CASE/data</DirectoryPath>
+                <FileNameOrPattern>sampleTestFile2.txt</FileNameOrPattern>
+                <Delimiter>,</Delimiter>
+                <Header>true</Header>
+                <Tags>director=Thomas,location=Finland</Tags>
+            </File>
+        </DataSource>
+    </DataSources>
+    <DataFlow>
+        <!--First datasource ingest-->
+        <Flow id="IngestFeed" type="Ingest">
+            <Ingest applyondataref="source_file" name="ingestedData_1"/>
+        </Flow>
+        <!--second datasource ingest-->
+        <Flow id="IngestFeed" type="Ingest">
+            <Ingest applyondataref="target_file" name="ingestedData_2"/>
+        </Flow>
+        <!--Transforming second datasource -->
+        <Flow id="transform" type="Transform">
+            <Transformations>
+                <Transformation name="deduplicatedData" applyondataref="ingestedData_2"
+                                transCategory="DeDuplicationTransformation">
+                    <DeDuplication>
+                        <DeDupColumns>
+                            <Column>name</Column>
+                            <Column>risk</Column>
+                        </DeDupColumns>
+                    </DeDuplication>
+                </Transformation>
+            </Transformations>
+        </Flow>
+
+        <!--starting recon process -->
+        <Flow id="ReconciliationFlow" type="Reconcile">
+            <Reconciliation name="ReconFlow" applyondataref="Source_Ingest,Target_Ingest">
+                <Source>ingestedData_1</Source>
+                <Target>deduplicatedData</Target>
+                <ComparisonKey>
+                    <Column>name=name</Column>
+                    <Column>risk=risk</Column>
+                </ComparisonKey>
+                <NumericColumns>
+                    <Column>amount=amount</Column>
+                    <Column>age=age</Column>
+                </NumericColumns>
+                <DeDuplicationStrategy side="source">
+                    <DeDupColumns>
+                        <Column>name</Column>
+                        <Column>risk</Column>
+                    </DeDupColumns>
+                    <Strategy columns="amount">max</Strategy>
+                </DeDuplicationStrategy>
+                <DeDuplicationStrategy side="target">
+                    <DeDupColumns>
+                        <Column>name</Column>
+                        <Column>risk</Column>
+                    </DeDupColumns>
+                    <Strategy columns="amount">max</Strategy>
+                </DeDuplicationStrategy>
+            </Reconciliation>
+        </Flow>
+
+        <Flow id="storeTable" type="Export">
+            <Export name="cstStoredData_1" applyondataref="ReconFlow">
+                <File format="csv">
+                    <TargetStore>local</TargetStore>
+                    <FileLocation>$APP_OUTPUT_PATH</FileLocation>
+                    <Mode>Overwrite</Mode>
+                </File>
+            </Export>
+        </Flow>
+
+    </DataFlow>
+</DataFlows>

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DataFlows xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:noNamespaceSchemaLocation="../../../../../rex-core/src/main/xsd/ManifestModel.xsd">
+    <DataSources>
+        <DataSource type="file" name="data_file">
+            <File>
+                <DirectoryPath>$PROJECT_PATH/src/test/resources/data/senseIR</DirectoryPath>
+                <FileNameOrPattern>PV_BOD_PARIS_NEW.csv</FileNameOrPattern>
+                <Header>true</Header>
+            </File>
+        </DataSource>
+        <DataSource type="file" name="env_file">
+            <File>
+                <DirectoryPath>$PROJECT_PATH/src/test/resources/data/senseIR</DirectoryPath>
+                <FileNameOrPattern>PV_BOD_PARIS_NEW.env</FileNameOrPattern>
+                <Header>true</Header>
+            </File>
+        </DataSource>
+    </DataSources>
+    <DataFlow>
+        <Flow id="ingest_datafile" type="Ingest">
+            <Ingest applyondataref="data_file" name="ingested_data"/>
+        </Flow>
+        <Flow id="ingest_envfile" type="Ingest">
+            <Ingest applyondataref="env_file" name="ingested_env"/>
+        </Flow>
+        <Flow id="transform" type="Transform">
+            <Transformations>
+                <Transformation name="added_filename" transCategory="ColumnTransformation"
+                                applyondataref="ingested_data">
+                    <ColumnTransformations>
+                        <AddNew>
+                            <Column name="sourceidentifier" valueFrom="fromStandardEnvVariable">$input_filename</Column>
+                        </AddNew>
+                    </ColumnTransformations>
+                </Transformation>
+                <Transformation name="only_filename" transCategory="ExpressionTransformation"
+                                applyondataref="added_filename">
+                    <Expression>
+                        <ColumnExpression>
+                            <Column name="fileName"
+                                    expr="${sourceidentifier}.split(&quot;/&quot;)(${sourceidentifier}.split(&quot;/&quot;).length - 1).split(&quot;\\.&quot;)(0)"
+                                    isNew="true" isNullable="true"/>
+                        </ColumnExpression>
+                    </Expression>
+                </Transformation>
+                <!-- Transforming env file -->
+                <Transformation name="added_envfile" transCategory="ColumnTransformation" applyondataref="ingested_env">
+                    <ColumnTransformations>
+                        <AddNew>
+                            <Column name="sourceidentifier" valueFrom="fromStandardEnvVariable">$input_filename</Column>
+                        </AddNew>
+                    </ColumnTransformations>
+                </Transformation>
+                <Transformation name="env_with_name" transCategory="ExpressionTransformation"
+                                applyondataref="added_envfile">
+                    <Expression>
+                        <ColumnExpression>
+                            <Column name="fileName"
+                                    expr="${sourceidentifier}.split(&quot;/&quot;)(${sourceidentifier}.split(&quot;/&quot;).length - 1).split(&quot;\\.&quot;)(0)"
+                                    isNew="true" isNullable="true"/>
+                        </ColumnExpression>
+                    </Expression>
+                </Transformation>
+
+                <!--Now joining both datasets on basis of fileName attribute -->
+                <Transformation name="joined_data" transCategory="JoinTransformation" applyondataref="only_filename">
+                    <JoinTransformation joinType="full">
+                        <RightSideJoiningData>env_with_name</RightSideJoiningData>
+                        <JoinKey leftSideKey="fileName" rightSideKey="fileName"/>
+                    </JoinTransformation>
+                </Transformation>
+                <!--removing dummy and unwanted columns -->
+                <Transformation name="selected_columns" transCategory="ColumnTransformation"
+                                applyondataref="joined_data">
+                    <ColumnTransformations>
+                        <Delete>
+                            <Column>fileName</Column>
+                            <Column>sourceidentifier</Column>
+                        </Delete>
+                    </ColumnTransformations>
+                </Transformation>
+
+            </Transformations>
+        </Flow>
+        <Flow id="storeOutput" type="Export">
+            <Export name="csvStoredData" applyondataref="selected_columns">
+                <File format="csv">
+                    <TargetStore>local</TargetStore>
+                    <FileLocation>$PROJECT_PATH/target/fullBussinessFlow</FileLocation>
+                    <Mode>Overwrite</Mode>
+                </File>
+            </Export>
+        </Flow>
+    </DataFlow>
+</DataFlows>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DataFlows xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:noNamespaceSchemaLocation="../../../../../rex-core/src/main/xsd/ManifestModel.xsd">
+    <DataSources>
+        <DataSource type="file" name="competitor_data">
+            <File>
+                <DirectoryPath>$PROJECT_PATH\\src\\test\\resources\\data</DirectoryPath>
+                <FileNameOrPattern>competitor_data.csv</FileNameOrPattern>
+                <Delimiter>|</Delimiter>
+                <Header>true</Header>
+            </File>
+        </DataSource>
+        <DataSource type="file" name="product_data">
+            <File>
+                <DirectoryPath>$PROJECT_PATH\\src\\test\\resources\\data</DirectoryPath>
+                <FileNameOrPattern>product_data.csv</FileNameOrPattern>
+                <Delimiter>|</Delimiter>
+                <Header>true</Header>
+            </File>
+        </DataSource>
+    </DataSources>
+    <DataFlow>
+        <Flow id="IngestFeed" type="Ingest">
+            <Ingest applyondataref="competitor_data" name="ingested_competitor"/>
+        </Flow>
+        <Flow id="IngestFeed" type="Ingest">
+            <Ingest applyondataref="product_data" name="ingested_product"/>
+        </Flow>
+        <!--Transforming second datasource -->
+        <Flow id="transform" type="Transform">
+            <Transformations>
+                <Transformation name="prdt_avlty" transCategory="GroupByTransformation"
+                                applyondataref="ingested_competitor">
+                    <GroupByTransformation>
+                        <GroupByColumn>productId</GroupByColumn>
+                        <AggregateColumn aggregator="COUNT" alias="competition">rivalName</AggregateColumn>
+                    </GroupByTransformation>
+                </Transformation>
+                <Transformation name="full_prdt_view" transCategory="JoinTransformation" applyondataref="prdt_avlty">
+                    <JoinTransformation joinType="full">
+                        <RightSideJoiningData>ingested_product</RightSideJoiningData>
+                        <JoinKey leftSideKey="productId" rightSideKey="ProductId"/>
+                    </JoinTransformation>
+                </Transformation>
+
+            </Transformations>
+        </Flow>
+
+        <Flow id="storeTable" type="Export">
+            <Export name="cstStoredData_1" applyondataref="full_prdt_view">
+                <File format="csv">
+                    <TargetStore>local</TargetStore>
+                    <FileLocation>$PROJECT_PATH\\target\\competition_analysis</FileLocation>
+                    <Mode>Overwrite</Mode>
+                </File>
+            </Export>
+        </Flow>
+
+    </DataFlow>
+</DataFlows>

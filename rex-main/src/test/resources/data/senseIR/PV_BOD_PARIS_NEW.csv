@@ -1,0 +1,3 @@
+"AssetID","Book","Currency","CurveID","ExternalTradeID","GlobalTradeID","GlobalTradeVersion","LegalEntity","Net","PV","Pricer","ToDateCashFlow","TradeAccrual","TradeID","TradePV","TradeType","TradeVersion"
+"0012ZFCH","108","EUR","R2D2FUT","SWAP/193650P/132","SUMMIT_SWAP_193650P","132","PARIS","-2721205.51383406","-2712560.554374","Vanilla","NaN","8644.95946006","193650P","-2712560.554374","SWAP","132"
+"0012ZFCJ","108","EUR","R2D2FUT","SWAP/193650P/132","SUMMIT_SWAP_193650P","132","PARIS","2.40310097773835E7","2.418684203273E7","Vanilla","NaN","155832.2553465","193650P","2.418684203273E7","SWAP","132"
