@@ -1,0 +1,11 @@
+name,age,risk,amount,date
+vishal,20,,10,12323
+rai,30,vega,2,12321
+rai,30,vega,10,12321
+rai,30,vega,20,12321
+rai,30,vega,20,12321
+rai,30,vega,20,12321
+rai,30,vega,15,12321
+ravi,20,delta,,12322
+ravi,20,delta,,12322
+shubham,40,gamma,10,12324

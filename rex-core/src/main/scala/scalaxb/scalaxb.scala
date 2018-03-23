@@ -27,13 +27,13 @@ object `package` {
     toXML(obj, namespace, Some(elementLabel), scope, false)
 
   @implicitNotFound(msg = "Cannot find CanWriteXML type class for ${A}")
-  def toXML[A](obj: A, elementLabel: String, scope: NamespaceBinding)(implicit format: CanWriteXML[A]): NodeSeq =
-    toXML(obj, None, Some(elementLabel), scope, false)
-
-  @implicitNotFound(msg = "Cannot find CanWriteXML type class for ${A}")
   def toXML[A](obj: A, namespace: Option[String], elementLabel: Option[String],
                scope: NamespaceBinding, typeAttribute: Boolean = false)(implicit format: CanWriteXML[A]): NodeSeq =
     format.writes(obj, namespace, elementLabel, scope, typeAttribute)
+
+  @implicitNotFound(msg = "Cannot find CanWriteXML type class for ${A}")
+  def toXML[A](obj: A, elementLabel: String, scope: NamespaceBinding)(implicit format: CanWriteXML[A]): NodeSeq =
+    toXML(obj, None, Some(elementLabel), scope, false)
 
   /** @return - maps from prefix to namespace URI.
     */
@@ -437,17 +437,17 @@ object DataRecord extends XMLStandardTypes {
   }
   import Helper._
 
-  // this is for choice option: DataRecord(x.namespace, Some(x.name), fromXML[Address](x))
-  def apply[A: CanWriteXML](namespace: Option[String], key: Option[String], value: A): DataRecord[A] =
-    DataWriter(namespace, key, None, None, value, implicitly[CanWriteXML[A]])
-
-  def apply[A: CanWriteXML](value: A): DataRecord[A] =
-    apply(None, None, value)
-
   // this is for long attributes
   def apply[A: CanWriteXML](x: Node, parent: Node, value: A): DataRecord[A] = x match {
     case _ => DataRecord(value)
   }
+
+  def apply[A: CanWriteXML](value: A): DataRecord[A] =
+    apply(None, None, value)
+
+  // this is for choice option: DataRecord(x.namespace, Some(x.name), fromXML[Address](x))
+  def apply[A: CanWriteXML](namespace: Option[String], key: Option[String], value: A): DataRecord[A] =
+    DataWriter(namespace, key, None, None, value, implicitly[CanWriteXML[A]])
 
   // this is for any.
   def apply(elemName: ElemName)(implicit handleNonDefault: scala.xml.Elem => Option[DataRecord[Any]]): DataRecord[Any] = fromAny(elemName.node, handleNonDefault)
@@ -458,6 +458,10 @@ object DataRecord extends XMLStandardTypes {
       case _ => DataRecord(None, None, None, None, seq.text)
     }
   }
+
+  def apply[A: CanWriteXML](namespace: Option[String], key: Option[String],
+                            xstypeNamespace: Option[String], xstypeName: Option[String], value: A): DataRecord[A] =
+    DataWriter(namespace, key, xstypeNamespace, xstypeName, value, implicitly[CanWriteXML[A]])
 
   def fromAny(elem: Elem, handleNonDefault: scala.xml.Elem => Option[DataRecord[Any]]): DataRecord[Any] = {
     val ns = scalaxb.Helper.nullOrEmpty(elem.scope.getURI(elem.prefix))
@@ -519,10 +523,6 @@ object DataRecord extends XMLStandardTypes {
       }
     }
   }
-
-  def apply[A: CanWriteXML](namespace: Option[String], key: Option[String],
-                            xstypeNamespace: Option[String], xstypeName: Option[String], value: A): DataRecord[A] =
-    DataWriter(namespace, key, xstypeNamespace, xstypeName, value, implicitly[CanWriteXML[A]])
 
   // this is for any.
   def fromNillableAny(seq: NodeSeq): DataRecord[Option[Any]] = {
@@ -992,16 +992,6 @@ object Helper {
       scala.xml.Attribute(scope.getPrefix(XSI_URL), "nil", "true", scala.xml.Null),
       scope, true)
 
-  def getPrefix(namespace: Option[String], scope: scala.xml.NamespaceBinding) =
-    if (nullOrEmpty(scope.getURI(null)) == namespace) None
-    else nullOrEmpty(scope.getPrefix(namespace.orNull))
-
-  def nullOrEmpty(value: String): Option[String] =
-    value match {
-      case null | "" => None
-      case x => Some(x)
-    }
-
   def splitBySpace(text: String) = text.split(' ').filter(_ != "")
 
   def instanceType(node: scala.xml.Node): (Option[String], Option[String]) = {
@@ -1031,6 +1021,16 @@ object Helper {
       """%s:%s""" format(_, name)
     } getOrElse {
       name
+    }
+
+  def getPrefix(namespace: Option[String], scope: scala.xml.NamespaceBinding) =
+    if (nullOrEmpty(scope.getURI(null)) == namespace) None
+    else nullOrEmpty(scope.getPrefix(namespace.orNull))
+
+  def nullOrEmpty(value: String): Option[String] =
+    value match {
+      case null | "" => None
+      case x => Some(x)
     }
 
   def stringToXML(obj: String, namespace: Option[String], elementLabel: Option[String],
