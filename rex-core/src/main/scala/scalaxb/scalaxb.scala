@@ -459,10 +459,6 @@ object DataRecord extends XMLStandardTypes {
     }
   }
 
-  def apply[A: CanWriteXML](namespace: Option[String], key: Option[String],
-                            xstypeNamespace: Option[String], xstypeName: Option[String], value: A): DataRecord[A] =
-    DataWriter(namespace, key, xstypeNamespace, xstypeName, value, implicitly[CanWriteXML[A]])
-
   def fromAny(elem: Elem, handleNonDefault: scala.xml.Elem => Option[DataRecord[Any]]): DataRecord[Any] = {
     val ns = scalaxb.Helper.nullOrEmpty(elem.scope.getURI(elem.prefix))
     val key = Some(elem.label)
@@ -523,6 +519,10 @@ object DataRecord extends XMLStandardTypes {
       }
     }
   }
+
+  def apply[A: CanWriteXML](namespace: Option[String], key: Option[String],
+                            xstypeNamespace: Option[String], xstypeName: Option[String], value: A): DataRecord[A] =
+    DataWriter(namespace, key, xstypeNamespace, xstypeName, value, implicitly[CanWriteXML[A]])
 
   // this is for any.
   def fromNillableAny(seq: NodeSeq): DataRecord[Option[Any]] = {
@@ -1023,16 +1023,6 @@ object Helper {
       name
     }
 
-  def getPrefix(namespace: Option[String], scope: scala.xml.NamespaceBinding) =
-    if (nullOrEmpty(scope.getURI(null)) == namespace) None
-    else nullOrEmpty(scope.getPrefix(namespace.orNull))
-
-  def nullOrEmpty(value: String): Option[String] =
-    value match {
-      case null | "" => None
-      case x => Some(x)
-    }
-
   def stringToXML(obj: String, namespace: Option[String], elementLabel: Option[String],
                   scope: scala.xml.NamespaceBinding): scala.xml.NodeSeq = {
     elementLabel map { label =>
@@ -1043,6 +1033,16 @@ object Helper {
       scala.xml.Text(obj)
     }
   }
+
+  def getPrefix(namespace: Option[String], scope: scala.xml.NamespaceBinding) =
+    if (nullOrEmpty(scope.getURI(null)) == namespace) None
+    else nullOrEmpty(scope.getPrefix(namespace.orNull))
+
+  def nullOrEmpty(value: String): Option[String] =
+    value match {
+      case null | "" => None
+      case x => Some(x)
+    }
 
   // assume outer scope
   def mergeNodeSeqScope(nodeseq: NodeSeq, outer: NamespaceBinding): NodeSeq =

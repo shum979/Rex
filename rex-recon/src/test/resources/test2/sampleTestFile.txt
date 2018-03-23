@@ -1,0 +1,5 @@
+name,age,risk,amount
+vishal,,,10.12
+rai,30,vega,20.343
+ravi,20,delta,
+sanjay,20,30,30.3
