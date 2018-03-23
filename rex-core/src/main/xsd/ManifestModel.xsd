@@ -1,0 +1,483 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2018 sp1 (x64) (http://www.altova.com) by shubham Gupta (sapient) -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+           attributeFormDefault="unqualified">
+    <xs:element name="DataFlows">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="DataSources" type="DataSourcesType" minOccurs="0"/>
+                <xs:element name="Properties" type="PropertiesType" minOccurs="0"/>
+                <xs:element name="DataFlow" type="DataFlowType" maxOccurs="unbounded"/>
+            </xs:sequence>
+            <xs:attribute name="name" type="xs:string"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:complexType name="FlowType">
+        <xs:sequence>
+            <xs:element name="Ingest" type="IngestType" minOccurs="0"/>
+            <xs:element name="Transformations" type="TransformationsType" minOccurs="0"/>
+            <xs:element name="Sql" type="SqlType" minOccurs="0"/>
+            <xs:element name="Export" type="ExportType" minOccurs="0"/>
+            <xs:element name="Reporting" type="ReportingType" minOccurs="0"/>
+            <xs:element name="Reconciliation" type="ReconciliationType" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="id" type="xs:string" use="required"/>
+        <xs:attribute name="type" use="required">
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="Transform"/>
+                    <xs:enumeration value="SQL"/>
+                    <xs:enumeration value="Export"/>
+                    <xs:enumeration value="Ingest"/>
+                    <xs:enumeration value="Reporting"/>
+                    <xs:enumeration value="Reconcile"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="ExportFileType">
+        <xs:sequence>
+            <xs:element name="TargetStore">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:minLength value="1"/>
+                        <xs:whiteSpace value="replace"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="FileLocation" type="xs:string"/>
+            <xs:element name="Partition" type="PartitionType" minOccurs="0"/>
+            <xs:element name="Mode" type="xs:string" minOccurs="0"/>
+            <xs:element name="Delimiter" type="xs:string" minOccurs="0"/>
+            <xs:element name="IncludeHeader" type="xs:boolean" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="format" type="exportFormat" use="required"/>
+    </xs:complexType>
+    <xs:complexType name="AggregationsType">
+        <xs:sequence>
+            <xs:element name="Aggregation" type="AggregationType" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="GroupByType">
+        <xs:sequence>
+            <xs:element name="GroupByColumn" type="xs:string" maxOccurs="unbounded"/>
+            <xs:element name="AggregateColumn" type="AggregationType" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="ColumnListType">
+        <xs:sequence>
+            <xs:element name="Column" type="xs:string" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="SqlType">
+        <xs:sequence>
+            <xs:element name="Query" type="xs:string"/>
+        </xs:sequence>
+        <xs:attribute name="registerAsTempTable" type="xs:boolean"/>
+        <xs:attribute name="applyondataref" type="xs:string" use="required"/>
+    </xs:complexType>
+    <xs:complexType name="RenamesType">
+        <xs:sequence>
+            <xs:element name="Column" type="RenameType" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="AddColumnsType">
+        <xs:sequence>
+            <xs:element name="Column" type="AddColumnType" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="DeleteColumnType">
+        <xs:sequence>
+            <xs:element name="Column" type="xs:string" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="AggregationType">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="aggregator" use="required">
+                    <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                            <xs:enumeration value="SUM"/>
+                            <xs:enumeration value="MAX"/>
+                            <xs:enumeration value="MIN"/>
+                            <xs:enumeration value="COUNT"/>
+                            <xs:enumeration value="AVG"/>
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:attribute>
+                <xs:attribute name="alias" type="xs:string" use="required"/>
+                <xs:attribute name="decimalPlaces" type="xs:int" use="optional"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="RenameType">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="existingName" type="xs:string" use="required"/>
+                <xs:attribute name="newName" type="xs:string" use="required"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="AddColumnType">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="name" type="xs:string" use="required"/>
+                <xs:attribute name="dataType" type="ColumnDataType" use="optional"/>
+                <xs:attribute name="valueFrom" use="required">
+                    <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                            <xs:enumeration value="literal"/>
+                            <xs:enumeration value="fromProperties"/>
+                            <xs:enumeration value="fromStandardEnvVariable"/>
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="ColumnTransformationType">
+        <xs:sequence>
+            <xs:element name="AddNew" type="AddColumnsType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="Delete" type="DeleteColumnType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="Rename" type="RenamesType" minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="DataFlowType">
+        <xs:sequence>
+            <xs:element name="Flow" type="FlowType" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="TransformationsType">
+        <xs:sequence>
+            <xs:element name="Transformation" type="TransformationType" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="HiveTableType">
+        <xs:attribute name="tableName" type="xs:string"/>
+    </xs:complexType>
+    <xs:complexType name="TransformationType">
+        <xs:sequence>
+            <xs:element name="ColumnTransformations" type="ColumnTransformationType" minOccurs="0"/>
+            <xs:element name="GroupByTransformation" type="GroupByType" minOccurs="0"/>
+            <xs:element name="JoinTransformation" type="JoinTransformType" minOccurs="0"/>
+            <xs:element name="DeDuplication" type="DeDuplicationType" minOccurs="0"/>
+            <xs:element name="Expression" minOccurs="0">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="RowExpression" type="ExpressionRowType" minOccurs="0"/>
+                        <xs:element name="ColumnExpression" type="ExpressionColumnType" minOccurs="0"/>
+                        <xs:element name="FilterExpression" type="ExpressionFilterType" minOccurs="0"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="category" use="required">
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="SchemaTransformation"/>
+                    <xs:enumeration value="ColumnTransformation"/>
+                    <xs:enumeration value="GroupByTransformation"/>
+                    <xs:enumeration value="SimpleFilterTransformation"/>
+                    <xs:enumeration value="CustomFilterTransformation"/>
+                    <xs:enumeration value="CustomTransformation"/>
+                    <xs:enumeration value="JoinTransformation"/>
+                    <xs:enumeration value="SQLTransformation"/>
+                    <xs:enumeration value="DeDuplicationTransformation"/>
+                    <xs:enumeration value="ExpressionTransformation"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="applyondataref" type="xs:string" use="required"/>
+    </xs:complexType>
+    <xs:simpleType name="ModeType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Append"/>
+            <xs:enumeration value="Overwrite"/>
+            <xs:enumeration value="ErrorIfExists"/>
+            <xs:enumeration value="Ignore"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:complexType name="DataSourcesType">
+        <xs:sequence>
+            <xs:element name="DataSource" type="DataSourceType" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="DataSourceType">
+        <xs:choice>
+            <xs:element name="Database" type="DatabaseType"/>
+            <xs:element name="File" type="FileType"/>
+        </xs:choice>
+        <xs:attribute name="type" type="SourceType" use="required"/>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+    </xs:complexType>
+    <xs:complexType name="DatabaseType">
+        <xs:sequence>
+            <xs:element name="Query" type="xs:string"/>
+            <xs:element name="Connection" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="FileType">
+        <xs:sequence>
+            <xs:element name="DirectoryPath" type="xs:string"/>
+            <xs:element name="FileNameOrPattern" type="xs:string" minOccurs="0"/>
+            <xs:element name="TopLinesToIgnore" type="xs:int" minOccurs="0"/>
+            <xs:element name="BottomLinesToIgnore" type="xs:int" minOccurs="0"/>
+            <xs:element name="Quote" type="xs:string" minOccurs="0"/>
+            <xs:element name="Delimiter" type="xs:string" minOccurs="0"/>
+            <xs:element name="Header" type="xs:boolean" minOccurs="0"/>
+            <xs:element name="SchemaFilePath" type="xs:string" minOccurs="0"/>
+            <xs:element name="Schema" type="SchemaType" minOccurs="0"/>
+            <xs:element name="Tags" type="xs:string" minOccurs="0"/>
+            <xs:element name="WithColumn" type="WithColumnType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string"/>
+        <xs:attribute name="format" default="csv">
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="csv"/>
+                    <xs:enumeration value="parquet"/>
+                    <xs:enumeration value="orc"/>
+                    <xs:enumeration value="text"/>
+                    <xs:enumeration value="json"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="WithColumnType">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute type="xs:string" name="name" use="required"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="PropertiesType">
+        <xs:sequence>
+            <xs:element name="Property" type="PropertyType" maxOccurs="unbounded"/>
+            <xs:element name="PropertyFilePath" type="PropertyFilePathType" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="PropertyFilePathType">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="propertyWithPrefix" type="xs:string" use="optional"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="PropertyType">
+        <xs:sequence>
+            <xs:element name="Key" type="xs:string"/>
+            <xs:element name="Value" type="xs:string"/>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string"/>
+    </xs:complexType>
+    <xs:complexType name="IngestType">
+        <xs:attribute name="applyondataref" type="xs:string" use="required"/>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+    </xs:complexType>
+    <xs:simpleType name="SourceType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="file"/>
+            <xs:enumeration value="db"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:complexType name="ReportingType">
+        <xs:sequence>
+            <xs:element name="ReportingSql" maxOccurs="unbounded" minOccurs="1">
+                <xs:complexType>
+                    <xs:simpleContent>
+                        <xs:extension base="xs:string">
+                            <xs:attribute type="xs:string" name="name" use="required"/>
+                        </xs:extension>
+                    </xs:simpleContent>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="PublishTo" type="xs:string"/>
+            <xs:element name="PublishingPath" type="xs:string"/>
+            <xs:element name="Mode" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="applyondataref" type="xs:string" use="required"/>
+    </xs:complexType>
+    <xs:complexType name="DeDuplicationType">
+        <xs:sequence>
+            <xs:element name="DeDupColumns" type="ColumnListType"/>
+            <xs:element name="Strategy" minOccurs="0">
+                <xs:complexType>
+                    <xs:simpleContent>
+                        <xs:extension base="xs:string">
+                            <xs:attribute name="columns" type="xs:string"/>
+                        </xs:extension>
+                    </xs:simpleContent>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="side" use="optional">
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="source"/>
+                    <xs:enumeration value="target"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="DateColumnsType">
+        <xs:sequence>
+            <xs:element name="DateColumn" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:attribute name="name"/>
+                    <xs:attribute name="sourceFormat"/>
+                    <xs:attribute name="targetFormat"/>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="SelectColumnsWithModeType">
+        <xs:sequence>
+            <xs:element name="Column" type="xs:string" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="mode">
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="required"/>
+                    <xs:enumeration value="ignore"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="ReconcilerType">
+        <xs:sequence>
+            <xs:element name="ClassName" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="ReconciliationType">
+        <xs:sequence>
+            <xs:element name="Source" type="xs:string"/>
+            <xs:element name="Target" type="xs:string"/>
+            <xs:element name="ComparisonKey" type="ColumnListType"/>
+            <xs:element name="DateColumns" type="DateColumnsType" minOccurs="0"/>
+            <xs:element name="NumericColumns" type="ColumnListType" minOccurs="0"/>
+            <xs:element name="ReconcileColumns" type="SelectColumnsWithModeType" minOccurs="0"/>
+            <xs:element name="Reconciler" type="ReconcilerType" minOccurs="0"/>
+            <xs:element name="CaseColumns" type="SelectColumnsWithModeType" minOccurs="0"/>
+            <xs:element name="AdditionalRequiredFields" type="additionalFieldsType" minOccurs="0"/>
+            <xs:element name="DeDuplicationStrategy" type="DeDuplicationType" minOccurs="0" maxOccurs="2"/>
+        </xs:sequence>
+        <xs:attribute name="applyondataref" type="xs:string" use="required"/>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+    </xs:complexType>
+    <xs:complexType name="ExportType">
+        <xs:choice>
+            <xs:element name="Hive" type="HiveTableType" minOccurs="0"/>
+            <xs:element name="File" type="ExportFileType" minOccurs="0"/>
+        </xs:choice>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="applyondataref" type="xs:string" use="required"/>
+    </xs:complexType>
+    <xs:complexType name="additionalFieldsType">
+        <xs:sequence>
+            <xs:element name="source" type="ColumnListType"/>
+            <xs:element name="target" type="ColumnListType"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="ExpressionColumnType">
+        <xs:sequence>
+            <xs:element name="Column" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:attribute name="name" type="xs:string" use="required"/>
+                    <xs:attribute name="type" type="xs:string"/>
+                    <xs:attribute name="isNullable" type="xs:boolean"/>
+                    <xs:attribute name="isNew" type="xs:boolean"/>
+                    <xs:attribute name="expr" type="xs:string" use="required"/>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="ExpressionRowType">
+        <xs:sequence>
+            <xs:element name="Column" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:attribute name="name" type="xs:string" use="required"/>
+                    <xs:attribute name="type" type="xs:string"/>
+                    <xs:attribute name="isNullable" type="xs:boolean"/>
+                    <xs:attribute name="isNew" type="xs:boolean"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="Expr" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="ExpressionFilterType">
+        <xs:sequence>
+            <xs:element name="Expr" type="xs:string" maxOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="SchemaColumnType">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="dataType" type="ColumnDataType" use="optional"/>
+                <xs:attribute type="xs:boolean" name="isNullable" use="optional"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="SchemaType">
+        <xs:sequence>
+            <xs:element name="SchemaColumn" type="SchemaColumnType" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="enforceMode">
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="failFast"/>
+                    <xs:enumeration value="dropMalformed"/>
+                    <xs:enumeration value="permissive"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="JoinTransformType">
+        <xs:sequence>
+            <xs:element name="RightSideJoiningData" type="xs:string" maxOccurs="1"/>
+            <xs:element name="JoinKey">
+                <xs:complexType>
+                    <xs:attribute name="leftSideKey" type="xs:string" use="required"></xs:attribute>
+                    <xs:attribute name="rightSideKey" type="xs:string" use="required"></xs:attribute>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="Select" type="ColumnListType" minOccurs="0"></xs:element>
+        </xs:sequence>
+        <xs:attribute name="joinType" use="required">
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="inner"/>
+                    <xs:enumeration value="full"/>
+                    <xs:enumeration value="left"/>
+                    <xs:enumeration value="right"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:complexType>
+    <xs:simpleType name="ColumnDataType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="integerType"/>
+            <xs:enumeration value="stringType"/>
+            <xs:enumeration value="doubleType"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="exportFormat">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="csv"/>
+            <xs:enumeration value="parquet"/>
+            <xs:enumeration value="avro"/>
+            <xs:enumeration value="json"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="PartitionType">
+        <xs:sequence>
+            <xs:element name="DatePartitionFormat" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="ColumnPartition" type="ColumnListType" minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+
+</xs:schema>

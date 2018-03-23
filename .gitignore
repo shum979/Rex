@@ -1,0 +1,12 @@
+target/
+*.iml
+metastore_db/
+.idea/
+*.log
+metastore/
+cache/
+.*dummyfolder
+
+functional-test/cucumber-test-reports.zip
+accelerator-flowexecutor/dummyfolder/
+accelerator-recon/dummyfolder/
