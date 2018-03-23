@@ -1,4 +1,4 @@
-package com.shubham.rex.core.helper
+package rex.core.helper
 
 /**
   * Created by Shubham Gupta on 06-Feb-18.

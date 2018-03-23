@@ -1,4 +1,4 @@
-package com.shubham.rex.core.common
+package rex.core.common
 
 import org.apache.spark.sql._
 import org.apache.spark.sql.catalyst.encoders.ExpressionEncoder

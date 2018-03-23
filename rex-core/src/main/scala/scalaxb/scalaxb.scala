@@ -8,7 +8,6 @@ import scala.language.{existentials, implicitConversions, postfixOps}
 import scala.xml.{Elem, NamespaceBinding, Node, NodeSeq}
 
 object `package` {
-
   import annotation.implicitNotFound
 
   @implicitNotFound(msg = "Cannot find XMLFormat type class for ${A}")
@@ -49,7 +48,6 @@ object `package` {
         parentMap
       }
     }
-
     doFromScope(scope).reverse
   }
 
@@ -210,7 +208,7 @@ trait XMLStandardTypes {
   }
 
   implicit lazy val __BooleanXMLFormat: XMLFormat[Boolean] = new XMLFormat[Boolean] {
-    def reads(seq: scala.xml.NodeSeq, stack: List[ElemName]): Either[String, Boolean] =
+    def reads(seq: scala.xml.NodeSeq, stack: List[ElemName]): Either[String, Boolean] = 
       seq.text match {
         case "1" | "true" => Right(true)
         case "0" | "false" => Right(false)
@@ -437,7 +435,6 @@ object DataRecord extends XMLStandardTypes {
       DataRecord(ns, key, value)
     case _ => DataRecord(value)
   }
-
   import Helper._
 
   // this is for long attributes
@@ -523,10 +520,6 @@ object DataRecord extends XMLStandardTypes {
     }
   }
 
-  def apply[A: CanWriteXML](namespace: Option[String], key: Option[String],
-                            xstypeNamespace: Option[String], xstypeName: Option[String], value: A): DataRecord[A] =
-    DataWriter(namespace, key, xstypeNamespace, xstypeName, value, implicitly[CanWriteXML[A]])
-
   // this is for any.
   def fromNillableAny(seq: NodeSeq): DataRecord[Option[Any]] = {
     seq match {
@@ -601,6 +594,10 @@ object DataRecord extends XMLStandardTypes {
   def apply(namespace: Option[String], key: Option[String], value: None.type): DataRecord[Option[Nothing]] =
     DataWriter(namespace, key, None, None, value, __NoneXMLWriter)
 
+  def apply[A: CanWriteXML](namespace: Option[String], key: Option[String],
+                            xstypeNamespace: Option[String], xstypeName: Option[String], value: A): DataRecord[A] =
+    DataWriter(namespace, key, xstypeNamespace, xstypeName, value, implicitly[CanWriteXML[A]])
+
   def unapply[A](record: DataRecord[A]): Option[(Option[String], Option[String], A)] =
     Some((record.namespace, record.key, record.value))
 
@@ -645,7 +642,6 @@ object DataRecord extends XMLStandardTypes {
       result
     }
   }
-
 }
 
 case class ElemName(namespace: Option[String], name: String) {
@@ -681,10 +677,8 @@ object ElemName {
 }
 
 trait AnyElemNameParser extends scala.util.parsing.combinator.Parsers {
-
   import scala.annotation.tailrec
   import scala.collection.mutable.ListBuffer
-
   type Elem = ElemName
 
   implicit class ReaderExt(reader: scala.util.parsing.input.Reader[ElemName]) {
@@ -702,7 +696,6 @@ trait AnyElemNameParser extends scala.util.parsing.combinator.Parsers {
 
   implicit def parserViewToParserExt[T, P](current: P)(implicit ev: P => Parser[T]): ParserExt[T, P] =
     new ParserExt[T, P](current, ev)
-
   implicit def parserToParserExt[T](current: Parser[T]): ParserExt[T, Parser[T]] =
     new ParserExt[T, Parser[T]](current, identity)
 
@@ -737,10 +730,8 @@ trait AnyElemNameParser extends scala.util.parsing.combinator.Parsers {
         case e@Error(_, _) => e // still have to propagate error
         case _ => Success(elems.toList, in0)
       }
-
       applyp(in)
     }
-
     first(in) match {
       case Success(x, rest) =>
         elems += x
@@ -797,7 +788,6 @@ trait AnyElemNameParser extends scala.util.parsing.combinator.Parsers {
   case class ~|~[+A, +B](a: A, b: B) {
     override def toString() = s"$a ~|~ $b"
   }
-
 }
 
 trait CanWriteChildNodes[A] extends CanWriteXML[A] {
@@ -865,7 +855,6 @@ trait ElemNameParser[A] extends AnyElemNameParser with XMLFormat[A] with CanWrit
 
 class ElemNameSeqReader(val seq: Seq[ElemName],
                         override val offset: Int) extends scala.util.parsing.input.Reader[ElemName] {
-
   import scala.util.parsing.input._
 
   def this(seq: Seq[ElemName]) = this(seq, 0)
@@ -898,11 +887,8 @@ class ElemNameSeqPosition(val source: Seq[ElemName], val offset: Int) extends
 
 class HexBinary(_vector: Vector[Byte]) extends scala.collection.IndexedSeq[Byte] {
   val vector = _vector
-
   def length = vector.length
-
   def apply(idx: Int): Byte = vector(idx)
-
   override def toString: String = DatatypeConverter.printHexBinary(vector.toArray)
 }
 
@@ -923,11 +909,8 @@ object HexBinary {
 
 class Base64Binary(_vector: Vector[Byte]) extends scala.collection.IndexedSeq[Byte] {
   val vector = _vector
-
   def length = vector.length
-
   def apply(idx: Int): Byte = vector(idx)
-
   override def toString: String = DatatypeConverter.printBase64Binary(vector.toArray)
 }
 
@@ -948,7 +931,6 @@ object Base64Binary {
 
 object XMLCalendar {
   def apply(value: String): XMLGregorianCalendar = Helper.toCalendar(value)
-
   def unapply(value: XMLGregorianCalendar): Option[String] = Some(value.toXMLFormat)
 }
 
@@ -1122,7 +1104,6 @@ object Helper {
           else elem.child.toSeq
         case _ => Nil
       }
-
     val rule = new RewriteRule {
       override def transform(n: Node): Seq[Node] = n match {
         case x@Elem(prefix, label, attr, scope, _*) if attr exists (p => p.key == "href") =>

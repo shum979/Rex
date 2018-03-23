@@ -11,6 +11,7 @@
 
     <modules>
         <module>rex-core</module>
+        <module>rex-source</module>
     </modules>
 
     <properties>

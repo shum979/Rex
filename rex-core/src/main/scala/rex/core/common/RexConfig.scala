@@ -1,4 +1,4 @@
-package com.shubham.rex.core.common
+package rex.core.common
 
 import com.typesafe.config.{Config, ConfigFactory}
 

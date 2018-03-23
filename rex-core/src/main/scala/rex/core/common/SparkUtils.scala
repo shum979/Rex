@@ -1,4 +1,4 @@
-package com.shubham.rex.core.common
+package rex.core.common
 
 /**
   * Created by Shubham Gupta on 07-Feb-18.

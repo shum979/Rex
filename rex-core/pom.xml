@@ -19,7 +19,7 @@
                 <version>1.5.0</version>
                 <configuration>
                     <outputDirectory>${project.basedir}/src/main/scala</outputDirectory>
-                    <packageName>com.shubham.rex.core.xml</packageName>
+                    <packageName>rex.core.xml</packageName>
                     <generateRuntime>true</generateRuntime>
                 </configuration>
                 <executions>

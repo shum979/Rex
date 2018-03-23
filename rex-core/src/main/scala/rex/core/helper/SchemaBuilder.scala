@@ -1,7 +1,7 @@
-package com.shubham.rex.core.helper
+package rex.core.helper
 
-import com.shubham.rex.core.xml.{ColumnDataType, SchemaColumnType}
 import org.apache.spark.sql.types._
+import rex.core.xml.{ColumnDataType, SchemaColumnType}
 
 import scala.io.Source
 import scala.util.parsing.json._

@@ -1,4 +1,4 @@
-package com.shubham.rex.core.common
+package rex.core.common
 
 import org.apache.spark.sql.{SQLContext, SparkSession}
 

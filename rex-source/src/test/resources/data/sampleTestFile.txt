@@ -1,0 +1,5 @@
+name,age,risk,amount
+vishal,20,,10
+rai,30,vega,20
+ravi,40,delta,
+shubham,40,gamma,10

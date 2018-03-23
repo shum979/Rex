@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DataFlows xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:noNamespaceSchemaLocation="../../../../../rex-core/src/main/xsd/ManifestModel.xsd">
+    <DataSources>
+        <DataSource type="file" name="source_file">
+            <File format="csv">
+                <DirectoryPath>$PROJECT_PATH\\src\\test\\resources</DirectoryPath>
+                <FileNameOrPattern>sampleTestFile.txt</FileNameOrPattern>
+                <Delimiter>,</Delimiter>
+                <Schema>
+                    <SchemaColumn dataType="integerType" isNullable="true">sellerId</SchemaColumn>
+                    <SchemaColumn dataType="stringType" isNullable="true">sallerCategory</SchemaColumn>
+                    <SchemaColumn dataType="stringType">sellerImpact</SchemaColumn>
+                </Schema>
+                <Tags>filesystem=FI,valueDate=05022018</Tags>
+                <WithColumn name="fileName">$FILE_NAME</WithColumn>
+                <WithColumn name="filesystem">$filesystem</WithColumn>
+                <WithColumn name="constant">shubham</WithColumn>
+            </File>
+        </DataSource>
+        <DataSource type="file" name="target_file">
+            <File>
+                <DirectoryPath>$PROJECT_PATH\\src\\test\\resources</DirectoryPath>
+                <FileNameOrPattern>sampleTestFile2.txt</FileNameOrPattern>
+                <Delimiter>,</Delimiter>
+                <Header>true</Header>
+                <Tags>director=Thomas,location=Finland</Tags>
+                <Schema>
+                    <SchemaColumn isNullable="false" dataType="doubleType"></SchemaColumn>
+                </Schema>
+            </File>
+        </DataSource>
+    </DataSources>
+    <Properties>
+        <Property>
+            <Key>AppWriterName</Key>
+            <Value>Shubham Gupta</Value>
+        </Property>
+        <Property>
+            <Key>AppWritingPlace</Key>
+            <Value>Gurgaon</Value>
+        </Property>
+        <PropertyFilePath propertyWithPrefix="simple.prefix">PATH_OF_PROPERTY_FILE</PropertyFilePath>
+    </Properties>
+    <DataFlow>
+        <Flow id="IngestFeed" type="Ingest">
+            <Ingest applyondataref="source_file" name="ingestedData_1"/>
+        </Flow>
+        <Flow id="IngestFeed" type="Ingest">
+            <Ingest applyondataref="target_file" name="ingestedData_2"/>
+        </Flow>
+        <Flow id="transform" type="Transform">
+            <Transformations>
+                <Transformation name="columnTransformation" category="ColumnTransformation"
+                                applyondataref="previousDataset">
+                    <ColumnTransformations>
+                        <AddNew>
+                            <Column name="sourceidentifier" dataType="stringType" valueFrom="fromStandardEnvVariable">
+                                input.file.name
+                            </Column>
+                        </AddNew>
+                        <Delete>
+                            <Column>LastsoldTs</Column>
+                        </Delete>
+                        <Rename>
+                            <Column existingName="SellerType" newName="classification"></Column>
+                        </Rename>
+                    </ColumnTransformations>
+                </Transformation>
+                <Transformation name="fileNameExtractor" category="ExpressionTransformation"
+                                applyondataref="prevoiusDataset">
+                    <Expression>
+                        <ColumnExpression>
+                            <Column name="fileName"
+                                    expr="val arr = ${sourceidentifier}.split(&quot;/&quot;);arr(arr.length - 1).split(&quot;\\.&quot;)(0)"
+                                    isNew="true" isNullable="true"/>
+                        </ColumnExpression>
+                    </Expression>
+                </Transformation>
+
+                <Transformation name="deduplicatedData" applyondataref="ingestedData_2"
+                                category="DeDuplicationTransformation">
+                    <DeDuplication>
+                        <DeDupColumns>
+                            <Column>name</Column>
+                            <Column>risk</Column>
+                        </DeDupColumns>
+                    </DeDuplication>
+                </Transformation>
+                <Transformation name="ExpressionTransformed" category="ExpressionTransformation"
+                                applyondataref="deduplicatedData">
+                    <Expression>
+                        <ColumnExpression>
+                            <Column name="sal" expr="if(${sal} &lt; 300) ${sal}+500 else ${sal}+100" isNew="true"/>
+                        </ColumnExpression>
+                        <RowExpression>
+                            <Column name="sal" isNew="false" isNullable="true" type="StringType"/>
+                            <Expr>if(${age} &gt; 25 &#38;&#38; ${sal} &lt; 500) {
+                                ${sal}=${sal} + 20
+                                ${sal_type}="less"
+                                }
+                                else if(${age} &lt; 25 &#38;&#38; ${sal} &lt; 500)
+                                ${sal}=${sal} + 20
+                                else {
+                                ${sal}=${sal} + 5
+                                ${sal_type}="OK"
+                                }
+                                if(${sal_type}.equals("less") &#38;&#38; ${age} >= 30) ${isActive} = true
+                                else ${isActive} = false
+                            </Expr>
+                        </RowExpression>
+                        <FilterExpression>
+                            <Expr>${age} &gt; 10 &amp;&amp; ${name}.substring(0,1) == \"c\" &amp;&amp; ${sal} &gt; 200
+                            </Expr>
+                        </FilterExpression>
+                    </Expression>
+                </Transformation>
+                <Transformation name="grpd" category="GroupByTransformation" applyondataref="previous">
+                    <GroupByTransformation>
+                        <GroupByColumn>FirstColumn</GroupByColumn>
+                        <GroupByColumn>SecondColumn</GroupByColumn>
+                        <AggregateColumn aggregator="SUM" alias="TotalSalary">salary</AggregateColumn>
+                    </GroupByTransformation>
+                </Transformation>
+
+                <Transformation name="joinedData" category="JoinTransformation" applyondataref="inputDataset">
+                    <JoinTransformation joinType="inner">
+                        <RightSideJoiningData>JonningDataset</RightSideJoiningData>
+                        <JoinKey leftSideKey="sellerId" rightSideKey="Seller_ID"></JoinKey>
+                        <Select>
+                            <Column>sellerId</Column>
+                            <Column>SellerType</Column>
+                            <Column>SellerImpact</Column>
+                            <Column>minMargin</Column>
+                            <Column>maxMargin</Column>
+                        </Select>
+                    </JoinTransformation>
+                </Transformation>
+            </Transformations>
+        </Flow>
+        <Flow id="ReconciliationFlow" type="Reconcile">
+            <Reconciliation name="ReconFlow" applyondataref="Source_Ingest,Target_Ingest">
+                <Source>ingestedData_1</Source>
+                <Target>deduplicatedData</Target>
+                <ComparisonKey>
+                    <Column>name=name</Column>
+                    <Column>risk=risk</Column>
+                </ComparisonKey>
+                <NumericColumns>
+                    <Column>amount=amount</Column>
+                    <Column>age=age</Column>
+                </NumericColumns>
+            </Reconciliation>
+        </Flow>
+        <Flow id="storeTable" type="Export">
+            <Export name="cstStoredData_1" applyondataref="ReconFlow">
+                <File format="csv">
+                    <TargetStore>local</TargetStore>
+                    <FileLocation>$PROJECT_PATH\\target\\ReconciliationFlow</FileLocation>
+                    <Partition>
+                        <DatePartitionFormat>$DAY</DatePartitionFormat>
+                        <ColumnPartition>
+                            <Column>column_name</Column>
+                        </ColumnPartition>
+                    </Partition>
+                    <Mode>Overwrite</Mode>
+                    <IncludeHeader>true</IncludeHeader>
+                </File>
+            </Export>
+        </Flow>
+        <Flow id="reportingAction" type="Reporting">
+            <Reporting name="reportingOps" applyondataref="previousStep">
+                <ReportingSql name="simpleSql">select * from table1</ReportingSql>
+                <PublishTo>local</PublishTo>
+                <PublishingPath>PATH_OF_DATA_STORE</PublishingPath>
+            </Reporting>
+        </Flow>
+
+    </DataFlow>
+</DataFlows>
