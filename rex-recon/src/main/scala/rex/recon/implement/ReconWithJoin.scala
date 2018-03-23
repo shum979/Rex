@@ -22,26 +22,26 @@ import scala.collection.mutable.ListBuffer
 /**
   * Created by Amit on 12/5/2017.
   */
-class ReconWithJoin(sbxReconConfig: ReconciliationType) extends Serializable with RexConfig with DataStoreTryHelper {
+class ReconWithJoin(reconConfig: ReconciliationType) extends Serializable with RexConfig with DataStoreTryHelper {
 
   //Add prefic as 'LHS_' in all left side and RHS_ in all right side columns(comparision key column, reconcilie columns, numericcolumns etc) to avoid ambiguity
-  val numericColumns = sbxReconConfig.NumericColumns match {
+  val numericColumns = reconConfig.NumericColumns match {
     case Some(value) => value.Column.map { x => val leftRightColumns = ReconUtil.findColumns(x); s"$LHS_PRIFIX${leftRightColumns._1}=$RHS_PRIFIX${leftRightColumns._2}" }
     case None => Nil
   }
-  val reconcileColumns = sbxReconConfig.ReconcileColumns match {
+  val reconcileColumns = reconConfig.ReconcileColumns match {
     case Some(value) => value.Column.map { x => val leftRightColumns = ReconUtil.findColumns(x); s"$LHS_PRIFIX${leftRightColumns._1}=$RHS_PRIFIX${leftRightColumns._2}" }
     case None => Nil
   }
-  val comparisionKeyColumns = sbxReconConfig.ComparisonKey.Column.map { x => val leftRightColumns = ReconUtil.findColumns(x); s"$LHS_PRIFIX${leftRightColumns._1}=$RHS_PRIFIX${leftRightColumns._2}" }
+  val comparisionKeyColumns = reconConfig.ComparisonKey.Column.map { x => val leftRightColumns = ReconUtil.findColumns(x); s"$LHS_PRIFIX${leftRightColumns._1}=$RHS_PRIFIX${leftRightColumns._2}" }
   val columnsLeft: Seq[String] = (comparisionKeyColumns ++ numericColumns ++ reconcileColumns).map(column => ReconUtil.findColumns(column)._1)
   val columnsRight: Seq[String] = (comparisionKeyColumns ++ numericColumns ++ reconcileColumns).map(column => ReconUtil.findColumns(column)._2)
   val getMatchingKeyString = comparisionKeyColumns.map(x => x.replaceFirst("=", "|")).mkString(",")
   val getLeftMatchingKey: Seq[String] = comparisionKeyColumns.map(x => ReconUtil.findColumns(x)._1)
   val getRightMatchingKey: Seq[String] = comparisionKeyColumns.map(x => ReconUtil.findColumns(x)._2)
   //Convert DeduplicationType to Deduplication case class
-  val leftDedupCaseClass = DeduplicationCaseClassAdapter(sbxReconConfig.DeDuplicationStrategy.filter(sbxDedupType => SOURCE_SIDE.eq(sbxDedupType.side.getOrElse("").toString)).head)
-  val rightDedupCaseClass = DeduplicationCaseClassAdapter(sbxReconConfig.DeDuplicationStrategy.filter(sbxDedupType => TARGET_SIDE.eq(sbxDedupType.side.getOrElse("").toString)).head)
+  val leftDedupCaseClass = DeduplicationCaseClassAdapter(reconConfig.DeDuplicationStrategy.filter(dedupType => SOURCE_SIDE.eq(dedupType.side.getOrElse("").toString)).head)
+  val rightDedupCaseClass = DeduplicationCaseClassAdapter(reconConfig.DeDuplicationStrategy.filter(dedupType => TARGET_SIDE.eq(dedupType.side.getOrElse("").toString)).head)
 
   def findMissing(joinedRow: Row, columns: Array[(String)]): Boolean = {
     if (joinedRow.getAs[Any](columns.head) != null)
@@ -178,6 +178,25 @@ class ReconWithJoin(sbxReconConfig: ReconciliationType) extends Serializable wit
   true : if columns match else false
    */
 
+  def findDiffInFieldFromRow(row: Row, reconciledColumns: String): Boolean = {
+    val splitedColumns = ReconUtil.findColumns(reconciledColumns)
+    val leftColumn = splitedColumns._1
+    val rightColumn = splitedColumns._2
+    val dataType: String = ReconUtil.getDataTypeFromSchema(row.schema, leftColumn).typeName.toLowerCase
+    val missmatch: Boolean = dataType.trim match {
+      case INT | FLOAT | DOUBLE | LONG => ReconUtil.numericComparision(row.getAs[Any](leftColumn), row.getAs[Any](rightColumn), dataType)
+      case _ => ReconUtil.stringComparision(row.getAs[String](leftColumn), row.getAs[String](rightColumn))
+    }
+    missmatch
+  }
+
+
+  /*
+  Method to find field level breaks in given row
+  accept row and return Seq[Row] for all fields level break
+  Return row schema= all matching keys, leftsidecolumnname, rightsidecolumnname, leftcolumnvalue, rightcolumnvalue
+   */
+
   def findFieldLevelDiffBasedOnReconciledKey(row: Row): Seq[Row] = {
 
     val numericAndReconciledColumns: Seq[String] = reconcileColumns ++ numericColumns
@@ -199,25 +218,6 @@ class ReconWithJoin(sbxReconConfig: ReconciliationType) extends Serializable wit
       val finalSeq: Seq[Any] = leftMatchingKey ++ rightMatchingKey ++ (x._1 :: x._2 :: x._3 :: x._4 :: Nil)
       Row(finalSeq: _*)
     }
-  }
-
-
-  /*
-  Method to find field level breaks in given row
-  accept row and return Seq[Row] for all fields level break
-  Return row schema= all matching keys, leftsidecolumnname, rightsidecolumnname, leftcolumnvalue, rightcolumnvalue
-   */
-
-  def findDiffInFieldFromRow(row: Row, reconciledColumns: String): Boolean = {
-    val splitedColumns = ReconUtil.findColumns(reconciledColumns)
-    val leftColumn = splitedColumns._1
-    val rightColumn = splitedColumns._2
-    val dataType: String = ReconUtil.getDataTypeFromSchema(row.schema, leftColumn).typeName.toLowerCase
-    val missmatch: Boolean = dataType.trim match {
-      case INT | FLOAT | DOUBLE | LONG => ReconUtil.numericComparision(row.getAs[Any](leftColumn), row.getAs[Any](rightColumn), dataType)
-      case _ => ReconUtil.stringComparision(row.getAs[String](leftColumn), row.getAs[String](rightColumn))
-    }
-    missmatch
   }
 
 

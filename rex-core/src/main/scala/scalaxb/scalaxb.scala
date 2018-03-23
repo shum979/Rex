@@ -437,12 +437,12 @@ object DataRecord extends XMLStandardTypes {
   }
   import Helper._
 
-  def apply[A: CanWriteXML](value: A): DataRecord[A] =
-    apply(None, None, value)
-
   // this is for choice option: DataRecord(x.namespace, Some(x.name), fromXML[Address](x))
   def apply[A: CanWriteXML](namespace: Option[String], key: Option[String], value: A): DataRecord[A] =
     DataWriter(namespace, key, None, None, value, implicitly[CanWriteXML[A]])
+
+  def apply[A: CanWriteXML](value: A): DataRecord[A] =
+    apply(None, None, value)
 
   // this is for long attributes
   def apply[A: CanWriteXML](x: Node, parent: Node, value: A): DataRecord[A] = x match {
@@ -520,10 +520,6 @@ object DataRecord extends XMLStandardTypes {
     }
   }
 
-  def apply[A: CanWriteXML](namespace: Option[String], key: Option[String],
-                            xstypeNamespace: Option[String], xstypeName: Option[String], value: A): DataRecord[A] =
-    DataWriter(namespace, key, xstypeNamespace, xstypeName, value, implicitly[CanWriteXML[A]])
-
   // this is for any.
   def fromNillableAny(seq: NodeSeq): DataRecord[Option[Any]] = {
     seq match {
@@ -597,6 +593,10 @@ object DataRecord extends XMLStandardTypes {
   // this is for nil element.
   def apply(namespace: Option[String], key: Option[String], value: None.type): DataRecord[Option[Nothing]] =
     DataWriter(namespace, key, None, None, value, __NoneXMLWriter)
+
+  def apply[A: CanWriteXML](namespace: Option[String], key: Option[String],
+                            xstypeNamespace: Option[String], xstypeName: Option[String], value: A): DataRecord[A] =
+    DataWriter(namespace, key, xstypeNamespace, xstypeName, value, implicitly[CanWriteXML[A]])
 
   def unapply[A](record: DataRecord[A]): Option[(Option[String], Option[String], A)] =
     Some((record.namespace, record.key, record.value))
@@ -1023,16 +1023,6 @@ object Helper {
       name
     }
 
-  def getPrefix(namespace: Option[String], scope: scala.xml.NamespaceBinding) =
-    if (nullOrEmpty(scope.getURI(null)) == namespace) None
-    else nullOrEmpty(scope.getPrefix(namespace.orNull))
-
-  def nullOrEmpty(value: String): Option[String] =
-    value match {
-      case null | "" => None
-      case x => Some(x)
-    }
-
   def stringToXML(obj: String, namespace: Option[String], elementLabel: Option[String],
                   scope: scala.xml.NamespaceBinding): scala.xml.NodeSeq = {
     elementLabel map { label =>
@@ -1043,6 +1033,16 @@ object Helper {
       scala.xml.Text(obj)
     }
   }
+
+  def getPrefix(namespace: Option[String], scope: scala.xml.NamespaceBinding) =
+    if (nullOrEmpty(scope.getURI(null)) == namespace) None
+    else nullOrEmpty(scope.getPrefix(namespace.orNull))
+
+  def nullOrEmpty(value: String): Option[String] =
+    value match {
+      case null | "" => None
+      case x => Some(x)
+    }
 
   // assume outer scope
   def mergeNodeSeqScope(nodeseq: NodeSeq, outer: NamespaceBinding): NodeSeq =

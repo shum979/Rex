@@ -78,8 +78,8 @@ object ReconUtil {
     val getRightMatchingKey: Seq[String] = comparisionKeyColumns.map(x => ReconUtil.findColumns(x)._2)
 
     //Convert DeduplicationType to Deduplication case class
-    val leftDedupCaseClass: DeduplicateCaseClass = DeduplicationCaseClassAdapter(reconConfig.DeDuplicationStrategy.filter(sbxDedupType => SOURCE_SIDE.eq(sbxDedupType.side.getOrElse("").toString)).head)
-    val rightDedupCaseClass: DeduplicateCaseClass = DeduplicationCaseClassAdapter(reconConfig.DeDuplicationStrategy.filter(sbxDedupType => TARGET_SIDE.eq(sbxDedupType.side.getOrElse("").toString)).head)
+    val leftDedupCaseClass: DeduplicateCaseClass = DeduplicationCaseClassAdapter(reconConfig.DeDuplicationStrategy.filter(DedupType => SOURCE_SIDE.eq(DedupType.side.getOrElse("").toString)).head)
+    val rightDedupCaseClass: DeduplicateCaseClass = DeduplicationCaseClassAdapter(reconConfig.DeDuplicationStrategy.filter(DedupType => TARGET_SIDE.eq(DedupType.side.getOrElse("").toString)).head)
 
     val leftDataSetSchema: StructType = StructType(StructField("", StringType, false) :: Nil)
     val rightDataSetSchema: StructType = StructType(StructField("", StringType, false) :: Nil)
